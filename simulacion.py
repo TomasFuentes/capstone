@@ -28,9 +28,15 @@ class Simulacion:
         #SE CREA Y SE AÑADE EL CAMION GRANDE
         self.camiones_grandes.append(Camion_grande())
 
+    def minimo_en_llegar_cuadrante(self):
+        minimo = list()
+        for camion in self.camiones_chicos:
+            if camion.status == "standby":
+                minimo.append((camion.id, camion.tiempo_desde_origen(camion.minimo_cuadrante())))
+            else:
+                minimo.append((camion.id, infinito))
+        return min(minimo, key = lambda t: t[1])
 
 simulacion = Simulacion()
 simulacion.inicio_simulacion(calles_en_cuadrantes)
-
-for camion in simulacion.camiones_chicos:
-    print(camion)
+print(simulacion.minimo_en_llegar_cuadrante())
