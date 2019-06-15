@@ -1,39 +1,36 @@
 from clases import *
 import json
 
-grid = Grid()
-calles_en_cuadrantes = {}  #DICCIONARIO CON LAS CALLES ORDENADAS POR CUADRANTE,
-             #ES DECIR, La entrada 1 tiene una lista con todas las calles correspondientes al cuadrante.
-for x in range (1,18):
-    calles_en_cuadrantes[x] = []
 with open('calles.txt') as json_file:
     calles = json.load(json_file)
 
-print(calles_en_cuadrantes)
+grid = Grid()
 for data in calles:
-    grid.add(data, calles[data])
-    cuadrante_calle = calles[data]["cuadrante"]
-    calles_en_cuadrantes[cuadrante_calle].append(Calle(data, calles[data]["comienza"][1], calles[data]["comienza"][0], calles[data]["termina"][1],
-                                                       calles[data]["termina"][0], calles[data]["cuadrante"], calles[data]["subcuadrante"]))
-print(grid)
-grid.generar_basura()
-print(grid)
-for x in grid.calles:
-    print(x)
-
+    grid.add_calle(data, calles[data])
+    
+calles_en_cuadrantes = {}  #DICCIONARIO CON LAS CALLES ORDENADAS POR CUADRANTE,
+             #ES DECIR, La entrada 1 tiene una lista con todas las calles correspondientes al cuadrante 1.
+for x in range (1,18):
+    calles_en_cuadrantes[x] = []
+    for data in calles:
+        if calles[data]["cuadrante"] == x:
+            calles_en_cuadrantes[x].append(Calle(data, calles[data]["comienza"][1], calles[data]["comienza"][0], calles[data]["termina"][1], calles[data]["termina"][0], calles[data]["cuadrante"], calles[data]["subcuadrante"]))
 
 class Simulacion:
     def __init__(self):
         self.camiones_chicos = []
-
+        self.camiones_grandes = []
 
     def inicio_simulacion(self,calles):
-        for cuadrante in calles:
-            self.camiones_chicos.append(Camion_chico(calles[cuadrante]))
+        #SE CREAN Y SE AÑADEN LOS CAMIONES CHICOS
+        for cuadrante in calles_en_cuadrantes:
+            self.camiones_chicos.append(Camion_chico(cuadrante, calles_en_cuadrantes[cuadrante]))
+        #SE CREA Y SE AÑADE EL CAMION GRANDE
+        self.camiones_grandes.append(Camion_grande())
 
 
 simulacion = Simulacion()
 simulacion.inicio_simulacion(calles_en_cuadrantes)
 
 for camion in simulacion.camiones_chicos:
-    print(camion.calles_a_recolectar)
+    print(camion)
