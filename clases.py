@@ -59,7 +59,7 @@ class Grid:
                 plt.plot(x[i:i+2], y[i:i+2], '-', markersize=0.8, color='#ffffff')
         return plt.show()
 
-    def add(self, calle, data):
+    def add_calle(self, calle, data):
         self.calles.append(Calle(calle, data["comienza"][1], data["comienza"][0], data["termina"][1], data["termina"][0], data["cuadrante"], data["subcuadrante"]))
 
     def generar_basura(self):
@@ -88,9 +88,19 @@ class Calle:
     def __str__(self):
         return "La calle '{}' que comienza en [{},{}] y termina en [{},{}] pertenece al cuadrante {} y subcuadrante {} tiene actualmente {} kilogramos de basura.".format(self.nombre, self.inicio_x, self.inicio_y, self.termino_x, self.termino_y, self.cuadrante, self.subcuadrante, self.basura_actual)
 
+    def distancia_origen_inicio(self):
+        return (100 * self.inicio_x) + (100 * self.inicio_y)
+
+    def distancia_origen_termino(self):
+        return self.distancia_origen_inicio() + 100
+
 
 class Camion_chico:
-    def __init__(self, calles_cuadrante_a_recolectar):
+    contador = 0
+    def __init__(self,cuadrante, calles_cuadrante_a_recolectar):
+        self.id = Camion_chico.contador
+        Camion_chico.contador += 1
+        self.cuadrante = cuadrante
         self.capacidad_maxima = 180
         self.basura_actual = 0
         self.posicion_x = 0
@@ -113,6 +123,9 @@ class Camion_chico:
         self.calles_a_recolectar = calles_cuadrante_a_recolectar
         self.ruteo_recoleccion = []
         self.calle_actual = None
+
+    def __str__(self):
+        return "El camión chico '{}' debe recolectar {} calles en el cuadrente {}".format(self.id, self.calles_por_recolectar, self.cuadrante)
 
     def definir_orden_recoleccion(self): ## debemos crear la función de ruteo para generar una LISTA ORDENADA, que defina el movimiento a
         pass
