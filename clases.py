@@ -2,7 +2,7 @@ from scipy.stats import halfgennorm
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-
+from math import inf as infinito
 
 class Grid:
     def __init__(self):
@@ -96,7 +96,7 @@ class Calle:
 
 
 class Camion_chico:
-    contador = 0
+    contador = 1
     def __init__(self,cuadrante, calles_cuadrante_a_recolectar):
         self.id = Camion_chico.contador
         Camion_chico.contador += 1
@@ -114,9 +114,7 @@ class Camion_chico:
         self.velocidad_desplazamiento_sinrecolectar = 15
         self.tiempo_de_espera_vaciado = 0
         self.cantidad_de_vaciados = 0 #cada vez que el camión bote su basura
-        self.a_vaciar = 0 #seteamos en 1 si es que el camión está yendo a vaciarse.
-        self.vaciando = 0 #seteamos en 1 si es que el camión está vaciandose.
-        self.recolectando = 0 #seteamos en 1 si es que el camión está recolectando una calle.
+        self.status = "standby" #"fuera de servicio", "standby", "moviendose", "recolectando", "vaciando"
         self.metros_recorridos_calle = 0 # variable para llevar registo al momento de estar recolectando
         self.calles_recolectadas = 0
         self.calles_por_recolectar = len(calles_cuadrante_a_recolectar)
@@ -126,6 +124,21 @@ class Camion_chico:
 
     def __str__(self):
         return "El camión chico '{}' debe recolectar {} calles en el cuadrente {}".format(self.id, self.calles_por_recolectar, self.cuadrante)
+
+    def minimo_cuadrante(self): #DETERMINA EL PUNTO MÍNIMO DEL CUADRANTE
+        minimo_x = infinito
+        minimo_y = infinito        
+        for calle in self.calles_a_recolectar:
+            if calle.inicio_x < minimo_x:
+                minimo_x = calle.inicio_x
+            if calle.inicio_y < minimo_y:
+                minimo_y = calle.inicio_y
+        return [minimo_x, minimo_y]
+
+    def tiempo_desde_origen(self, coordenadas):
+        x = coordenadas[1]
+        y = coordenadas[0]
+        return ((100 * x) + (100 * y))/self.velocidad_desplazamiento_sinrecolectar
 
     def definir_orden_recoleccion(self): ## debemos crear la función de ruteo para generar una LISTA ORDENADA, que defina el movimiento a
         pass
