@@ -21,7 +21,7 @@ class Simulacion:
         self.camiones_chicos = []
         self.camiones_grandes = []
 
-    def inicio_simulacion(self,calles):
+    def load_data(self,calles):
         #SE CREAN Y SE AÑADEN LOS CAMIONES CHICOS
         for cuadrante in calles_en_cuadrantes:
             self.camiones_chicos.append(Camion_chico(cuadrante, calles_en_cuadrantes[cuadrante]))
@@ -36,7 +36,18 @@ class Simulacion:
             else:
                 minimo.append((camion.id, infinito))
         return min(minimo, key = lambda t: t[1])
+    
+    def termino_simulacion(self):
+        pass
+    
+    def inicio_simulacion(self):
+        t = 0
+        while t < 1000:
+            minimo = [self.minimo_en_llegar_cuadrante()]
+        self.termino_simulacion()
 
 simulacion = Simulacion()
-simulacion.inicio_simulacion(calles_en_cuadrantes)
+simulacion.load_data(calles_en_cuadrantes)
+simulacion.inicio_simulacion()
+simulacion.camiones_chicos[0].definir_orden_recoleccion()
 print(simulacion.minimo_en_llegar_cuadrante())

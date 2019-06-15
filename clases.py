@@ -135,6 +135,86 @@ class Camion_chico:
                 minimo_y = calle.inicio_y
         return [minimo_x, minimo_y]
 
+    def definir_orden_recoleccion(self):  ## debemos crear la función de ruteo para generar una LISTA ORDENADA, que defina el movimiento a
+        xmin = 62
+        ymin = 62
+        xmax = -1
+        ymax = -1
+        subiendo = True
+        orden = []
+        for calle in self.calles_a_recolectar:
+            ## determinamos la coordenada minima y máxima dentro del cuadrante.
+            if calle.inicio_x < xmin:
+                xmin = calle.inicio_x
+            if calle.inicio_y < ymin:
+                ymin = calle.inicio_y
+            if calle.termino_x > xmax:
+                xmax = calle.termino_x
+            if calle.termino_y > ymax:
+                ymax = calle.termino_y
+        print("XMAX: {}".format(xmax))
+        print("YMAX: {}".format(ymax))
+        print("XMIN: {}".format(xmin))
+        print("YMIN: {}".format(ymin))
+        yactual = ymin
+        for xactual in range(xmin, xmax + 1):  ## Determinamos el orden de todas las calles verticales.
+            while (True):
+                for calle in self.calles_a_recolectar:
+                    if subiendo:
+                        if calle.inicio_x == xactual and calle.inicio_y == yactual and calle.termino_x == xactual \
+                                and calle.termino_y == yactual + 1:
+                            orden.append(calle)
+                            #print("PUNTO S  ({}, {})".format(xactual, yactual))
+                            self.calles_a_recolectar.remove(calle)
+                    else:
+                        if calle.inicio_x == xactual and calle.inicio_y == yactual - 1 and calle.termino_x == xactual \
+                                and calle.termino_y == yactual:
+                            orden.append(calle)
+                            #print("PUNTO SN ({}, {})".format(xactual, yactual))
+                            self.calles_a_recolectar.remove(calle)
+                if subiendo:
+                    yactual += 1
+                    if yactual >= ymax:
+                        subiendo = False
+                        break
+                else:
+                    yactual -= 1
+                    if yactual == ymin:
+                        subiendo = True
+                        break
+        xactual = xmax
+        devolviendo = True
+
+        for yactual in range(ymax, ymin - 1, -1):  ## Determinamos el orden de todas las calles horizontales.
+            while (True):
+                for calle in self.calles_a_recolectar:
+                    if devolviendo:
+                        if calle.inicio_x == xactual - 1 and calle.inicio_y == yactual and calle.termino_x == xactual and calle.termino_y == yactual:
+                            orden.append(calle)
+                            #print("PUNTO D  ({}, {})".format(xactual, yactual))
+                            self.calles_a_recolectar.remove(calle)
+                    else:
+                        if calle.inicio_x == xactual and calle.inicio_y == yactual and calle.termino_x == xactual + 1 and calle.termino_y == yactual:
+                            orden.append(calle)
+                            #print("PUNTO DN ({}, {})".format(xactual, yactual))
+                            self.calles_a_recolectar.remove(calle)
+                # print("PUNTO ({} , {})".format(xactual,yactual))
+                if devolviendo == True:
+                    xactual -= 1
+                    if xactual <= xmin:
+                        devolviendo = False
+                        break
+                else:
+                    xactual += 1
+                    if xactual >= xmax:
+                        devolviendo = True
+                        break
+        print(orden)
+        self.calles_a_recolectar = orden
+        print("La cantidad de calles ordenadas es {}".format(len(self.calles_a_recolectar)))
+        print("La cantidad de calles iniciales es {}".format(self.calles_por_recolectar))
+
+
     def tiempo_desde_origen(self, coordenadas):
         x = coordenadas[1]
         y = coordenadas[0]
@@ -142,8 +222,10 @@ class Camion_chico:
 
     def definir_orden_recoleccion(self): ## debemos crear la función de ruteo para generar una LISTA ORDENADA, que defina el movimiento a
         pass
+
     def ida_vaciado(self): ##cada vez que el camión se llena, es decir a_vaciar 1 nos movemos con esta funcion para optimizar el movimiento
         pass
+        
     def vuelta_vaciado(self): ## define el ruteo para la vuelta a recolección.
         pass
 
