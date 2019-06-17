@@ -34,6 +34,7 @@ class Simulacion:
     def dia_simulacion(self):
         tiempo_simulacion = 0
         self.grid.generar_basura()
+        print(self.grid)
         for camion in self.camiones_chicos:
             camion.inicio_dia()
             camion.tiempo_traslado_cuadrante(tiempo_simulacion)
@@ -62,19 +63,30 @@ class Simulacion:
                     if len(self.camion_grande.cola_vaciado) == 1 and self.camion_grande.status == "CENTRO DE ACOPIO":
                         self.camion_grande.tiempo_siguiente_evento = tiempo_simulacion
                 elif camion_actual.status == "VACIANDO":
+                    self.camion_grande.cola_vaciado.pop(0)
                     camion_actual.tiempo_traslado_cuadrante(tiempo_simulacion)
+                    if len(self.camion_grande.cola_vaciado) >= 1 and self.camion_grande.status == "CENTRO DE ACOPIO":
+                        self.camion_grande.tiempo_siguiente_evento = tiempo_simulacion
 
             else:  #Si el camion que realiza el siguiente evento es grande:
                 print("EVENTO CAMIÓN GRANDE: {} AT {}".format(camion_actual.status, tiempo_simulacion))
                 if camion_actual.status == "VACIADO":
-                    camion_actual.status = "CENTRO DE ACOPIO"
+                    self.camion_grande.status = "CENTRO DE ACOPIO"
                     if len(camion_actual.cola_vaciado) != 0:
                         self.tiempo_siguiente_evento = tiempo_simulacion
                 elif camion_actual.status == "CENTRO DE ACOPIO":
                     camion_actual.descarga_camion_chico(tiempo_simulacion)
-                    
 
-        
+        for camion in self.camiones_chicos:
+            if camion.status == "RECOLECTANDO":
+                self.camion_grande.basura_actual += camion.basura_actual
+                camion.basura_actual = 0
+
+        for camion in self.camion_grande.cola_vaciado:
+            self.camion_grande.descarga_camion_chico(tiempo_simulacion)
+        self.camion_grande.ida_vaciado(tiempo_simulacion)      
+        print("BASURA TOTAL : {}".format(self.camion_grande.basura_total))
+        print(self.grid)
         self.limpia_express()
         #self.grid.mapa()
 

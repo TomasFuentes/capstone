@@ -270,6 +270,7 @@ class Camion_grande:
     def __init__(self):
         self.capacidad_maxima = 1600
         self.basura_actual = 0
+        self.basura_total = 0
         self.velocidad_desplazamiento_sinrecolectar = 90
         self.tiempo_sin_camiones = 0
         self.tiempo_vaciando = 0
@@ -285,11 +286,13 @@ class Camion_grande:
         tiempo += 2 * (30/self.velocidad_desplazamiento_sinrecolectar)*3600
         tiempo += self.tiempo_vaciado_centro_acopio
         self.tiempo_siguiente_evento = tiempo
+        self.basura_total += self.basura_actual
+        self.basura_actual = 0
         return self.tiempo_siguiente_evento
     
     def descarga_camion_chico(self, tiempo_simulacion):
         if len(self.cola_vaciado) != 0:
-            camion = self.cola_vaciado.pop(0)
+            camion = self.cola_vaciado[0]
             self.basura_actual += camion.basura_actual
             camion.basura_actual = 0
             camion.status = "VACIANDO"
