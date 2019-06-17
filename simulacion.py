@@ -77,18 +77,20 @@ class Simulacion:
                 elif camion_actual.status == "CENTRO DE ACOPIO":
                     camion_actual.descarga_camion_chico(tiempo_simulacion)
         aux = 0 
-        for camion in self.camiones_chicos:
-            if camion.status == "RECOLECTANDO":
-                self.camion_grande.basura_actual += camion.basura_actual
-                camion.basura_actual = 0
+        for camion in self.camiones_chicos: #hay que cambiar esto.
+                                            #le estoy metiendo a la mala toda la basura de los camiones que están esperando o recolectando.
+            self.camion_grande.basura_actual += camion.basura_actual
+            camion.basura_actual = 0
             print("basura actual {} tiempo evento {} basura total recogida {}".format(camion.basura_actual,
                                                                             camion.tiempo_siguiente_evento, camion.basura_total_recogida))
             aux += camion.basura_total_recogida
 
         print("-----  BASURA TOTAL RECOGIDA  {} -----".format(aux))
 
-        for camion in self.camion_grande.cola_vaciado:
+        for camion in self.camion_grande.cola_vaciado: # esto es para que el camion grande vaya a dejar la basura
             self.camion_grande.descarga_camion_chico(tiempo_simulacion)
+
+
         self.camion_grande.ida_vaciado(tiempo_simulacion)      
         print("BASURA TOTAL CAMION GRANDE: {}".format(self.camion_grande.basura_total))
         print(self.grid)
