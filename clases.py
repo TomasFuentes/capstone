@@ -59,8 +59,8 @@ class Grid:
                 plt.plot(x[i:i+2], y[i:i+2], '-', markersize=0.8, color='#ffffff')
         return plt.show()
 
-    def add_calle(self, calle, data):
-        self.calles.append(Calle(calle, data["comienza"][1], data["comienza"][0], data["termina"][1], data["termina"][0], data["cuadrante"], data["subcuadrante"]))
+    def add_calle(self, calle):
+        self.calles.append(calle)
 
     def generar_basura(self):
         for calle in self.calles:
@@ -80,6 +80,7 @@ class Calle:
         self.cuadrante = cuadrante
         self.subcuadrante = subcuadrante
         self.basura_actual = 0
+        self.borde = False
         self.recogida_hoy = 0 # Variable que se setea en 1 si es que un camión pasa RECOGIENDO BASURA ese día.
 
     def __repr__(self):
@@ -103,27 +104,55 @@ class Camion_chico:
         self.cuadrante = cuadrante
         self.capacidad_maxima = 180
         self.basura_actual = 0
-        self.posicion_x = 0
-        self.posicion_y = 0
-        self.ultima_posicion_recolectado_x = 0
-        self.ultima_posicion_recolectado_y = 0
         self.tiempo_recoleccion = 0
         self.tiempo_desplazamiento = 0
         self.tiempo_total = 0
-        self.velocidad_desplazamiento_recoleccion = 50
-        self.velocidad_desplazamiento_sinrecolectar = 15
+        self.tiempo_siguiente_evento = 0
+        self.velocidad_desplazamiento_recoleccion = 15/3.6
+        self.velocidad_desplazamiento_sinrecolectar = 50/3.6
         self.tiempo_de_espera_vaciado = 0
         self.cantidad_de_vaciados = 0 #cada vez que el camión bote su basura
-        self.status = "standby" #"fuera de servicio", "standby", "moviendose", "recolectando", "vaciando"
-        self.metros_recorridos_calle = 0 # variable para llevar registo al momento de estar recolectando
+        self.status = "STANDBY" #"fuera de servicio", "standby", "trasladandose", "recolectando", "vaciando", "lleno"
         self.calles_recolectadas = 0
+        self.calles_transportadas = 0
         self.calles_por_recolectar = len(calles_cuadrante_a_recolectar)
         self.calles_a_recolectar = calles_cuadrante_a_recolectar
-        self.ruteo_recoleccion = []
+        self.ruteo_recoleccion = list()
         self.calle_actual = None
 
     def __str__(self):
         return "El camión chico '{}' debe recolectar {} calles en el cuadrente {}".format(self.id, self.calles_por_recolectar, self.cuadrante)
+
+    def inicio_dia(self): #INCOMPLETA
+        self.calles_a_recolectar = self.ruteo_recoleccion
+
+    def recoleccion(self):
+        calle = self.calles_a_recolectar.pop(0)
+        aux = self.basura_actual
+        aux2 = calle.basura_actual
+        self.basura_actual += calle.basura_actual
+        calle.basura_actual = 0
+        self.calles_recolectadas += 1
+        if self.basura_actual >= self.capacidad_maxima:
+            calle.basura_actual = self.basura_actual - aux
+            self.basura_actual = self.capacidad_maxima
+            self.calles_recolectadas -= 1
+            #print("El camión chico {} se llenó en la calle '{}'".format(self.id, calle.nombre))
+            self.calle_actual = calle
+            return True
+        elif aux2 != 0:
+            #print("El camión chico {} recolectó {} kg de basura en la calle '{}'".format(self.id, aux2, calle.nombre)) 
+            return False 
+
+    def tiempo_en_recolectar(self, tiempo_simulacion):
+        self.status = "RECOLECTANDO"
+        tiempo = tiempo_simulacion
+        for calle in self.calles_a_recolectar:
+            tiempo += 100/self.velocidad_desplazamiento_recoleccion 
+            if self.recoleccion():
+                self.tiempo_siguiente_evento = tiempo
+                return self.tiempo_siguiente_evento
+                
 
     def minimo_cuadrante(self): #DETERMINA EL PUNTO MÍNIMO DEL CUADRANTE
         minimo_x = infinito
@@ -152,10 +181,10 @@ class Camion_chico:
                 xmax = calle.termino_x
             if calle.termino_y > ymax:
                 ymax = calle.termino_y
-        print("XMAX: {}".format(xmax))
-        print("YMAX: {}".format(ymax))
-        print("XMIN: {}".format(xmin))
-        print("YMIN: {}".format(ymin))
+        #print("XMAX: {}".format(xmax))
+        #print("YMAX: {}".format(ymax))
+        #print("XMIN: {}".format(xmin))
+        #print("YMIN: {}".format(ymin))
         yactual = ymin
         for xactual in range(xmin, xmax + 1):  ## Determinamos el orden de todas las calles verticales.
             while (True):
@@ -166,12 +195,16 @@ class Camion_chico:
                             orden.append(calle)
                             #print("PUNTO S  ({}, {})".format(xactual, yactual))
                             self.calles_a_recolectar.remove(calle)
+                            if yactual + 1 >= ymax:
+                                calle.borde = True
                     else:
                         if calle.inicio_x == xactual and calle.inicio_y == yactual - 1 and calle.termino_x == xactual \
                                 and calle.termino_y == yactual:
                             orden.append(calle)
                             #print("PUNTO SN ({}, {})".format(xactual, yactual))
                             self.calles_a_recolectar.remove(calle)
+                            if yactual - 1 == ymin:
+                                calle.borde = True
                 if subiendo:
                     yactual += 1
                     if yactual >= ymax:
@@ -193,11 +226,15 @@ class Camion_chico:
                             orden.append(calle)
                             #print("PUNTO D  ({}, {})".format(xactual, yactual))
                             self.calles_a_recolectar.remove(calle)
+                            if xactual - 1 <= xmin:
+                                calle.borde = True
                     else:
                         if calle.inicio_x == xactual and calle.inicio_y == yactual and calle.termino_x == xactual + 1 and calle.termino_y == yactual:
                             orden.append(calle)
                             #print("PUNTO DN ({}, {})".format(xactual, yactual))
                             self.calles_a_recolectar.remove(calle)
+                            if xactual + 1 >= xmax:
+                                calle.borde = True
                 # print("PUNTO ({} , {})".format(xactual,yactual))
                 if devolviendo == True:
                     xactual -= 1
@@ -209,26 +246,28 @@ class Camion_chico:
                     if xactual >= xmax:
                         devolviendo = True
                         break
-        print(orden)
+        #print(orden)
+        self.ruteo_recoleccion = orden
         self.calles_a_recolectar = orden
-        print("La cantidad de calles ordenadas es {}".format(len(self.calles_a_recolectar)))
-        print("La cantidad de calles iniciales es {}".format(self.calles_por_recolectar))
+        #print("La cantidad de calles ordenadas es {}".format(len(self.calles_a_recolectar)))
+        #print("La cantidad de calles iniciales es {}".format(self.calles_por_recolectar))
 
+    def tiempo_traslado_acopio(self, tiempo_simulacion):
+        tiempo = tiempo_simulacion
+        self.status = "YENDO A VACIAR"
+        self.tiempo_siguiente_evento = tiempo + self.tiempo_desde_origen((self.calle_actual.termino_x, self.calle_actual.termino_y))
+        return self.tiempo_siguiente_evento
+    
+    def tiempo_traslado_cuadrante(self, tiempo_simulacion):
+        tiempo = tiempo_simulacion
+        self.status = "YENDO A CUADRANTE"
+        self.tiempo_siguiente_evento = tiempo + self.tiempo_desde_origen((self.calles_a_recolectar[0].inicio_x, self.calles_a_recolectar[0].inicio_y))
+        return self.tiempo_siguiente_evento
 
     def tiempo_desde_origen(self, coordenadas):
         x = coordenadas[1]
         y = coordenadas[0]
         return ((100 * x) + (100 * y))/self.velocidad_desplazamiento_sinrecolectar
-
-    def definir_orden_recoleccion(self): ## debemos crear la función de ruteo para generar una LISTA ORDENADA, que defina el movimiento a
-        pass
-
-    def ida_vaciado(self): ##cada vez que el camión se llena, es decir a_vaciar 1 nos movemos con esta funcion para optimizar el movimiento
-        pass
-        
-    def vuelta_vaciado(self): ## define el ruteo para la vuelta a recolección.
-        pass
-
 
 class Camion_grande:
 
@@ -238,16 +277,38 @@ class Camion_grande:
         self.velocidad_desplazamiento_sinrecolectar = 90
         self.tiempo_sin_camiones = 0
         self.tiempo_vaciando = 0
+        self.tiempo_vaciado_centro_acopio = 30 * 60
         self.vaciando = 0  # seteamos en 1 si es que un camión chico está vaciandose.
-        self.km_recorridos_a_vaciar = 0
-        self.tiempo_vaciado_camion_actual = 0 # variable que va de 0 a 20mins y es para analizar el tiempo real de vaciado del camion.
+        self.status = "CENTRO DE ACOPIO" #'CENTRO DE ACOPIO', 'VACIADO'
         """ver si usaremos la variable de arriba para controlar el vaciado, es decir que tenemos que definir si el camión 
         grande controla el vaciado del camión chico, o si el camión chico lo controla solo"""
         self.cola_vaciado = [] #cola para definir orden camiones.
+        self.tiempo_siguiente_evento = infinito
 
-    def ida_vaciado(self):  ##cada vez que el camión se llena ejecutamos el movimiento
-        pass
+    def ida_vaciado(self, tiempo_simulacion):  ##cada vez que el camión se llena ejecutamos el movimiento
+        tiempo = tiempo_simulacion
+        self.status = "VACIADO"
+        tiempo += 2 * (30/self.velocidad_desplazamiento_sinrecolectar)*3600
+        tiempo += self.tiempo_vaciado_centro_acopio
+        self.tiempo_siguiente_evento = tiempo
+        return self.tiempo_siguiente_evento
+    
+    def descarga_camion_chico(self, tiempo_simulacion):
+        if len(self.cola_vaciado) != 0:
+            camion = self.cola_vaciado.pop(0)
+            self.basura_actual += camion.basura_actual
+            camion.basura_actual = 0
+            camion.status = "VACIANDO"
+            camion.tiempo_siguiente_evento = tiempo_simulacion + 20 * 60
+            self.tiempo_siguiente_evento = camion.tiempo_siguiente_evento
+            if self.basura_actual >= self.capacidad_maxima:
+                self.ida_vaciado(tiempo_simulacion)
+        else:
+            self.tiempo_siguiente_evento = infinito
+            
 
-    def vuelta_vaciado(self):  ## define el ruteo para la vuelta a recolección.
-        pass
+            
+
+
+
 
