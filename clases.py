@@ -181,10 +181,6 @@ class Camion_chico:
                 xmax = calle.termino_x
             if calle.termino_y > ymax:
                 ymax = calle.termino_y
-        #print("XMAX: {}".format(xmax))
-        #print("YMAX: {}".format(ymax))
-        #print("XMIN: {}".format(xmin))
-        #print("YMIN: {}".format(ymin))
         yactual = ymin
         for xactual in range(xmin, xmax + 1):  ## Determinamos el orden de todas las calles verticales.
             while (True):
@@ -280,8 +276,6 @@ class Camion_grande:
         self.tiempo_vaciado_centro_acopio = 30 * 60
         self.vaciando = 0  # seteamos en 1 si es que un camión chico está vaciandose.
         self.status = "CENTRO DE ACOPIO" #'CENTRO DE ACOPIO', 'VACIADO'
-        """ver si usaremos la variable de arriba para controlar el vaciado, es decir que tenemos que definir si el camión 
-        grande controla el vaciado del camión chico, o si el camión chico lo controla solo"""
         self.cola_vaciado = [] #cola para definir orden camiones.
         self.tiempo_siguiente_evento = infinito
 

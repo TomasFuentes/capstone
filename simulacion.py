@@ -11,6 +11,8 @@ class Simulacion:
         self.camiones_chicos = []
         self.camion_grande = None
         self.grid = grid
+        self.calles = None
+        self.basura_recogida_limpiaexpress = 0
 
     def load_data(self,calles):
         #SE CREAN Y SE AÑADEN LOS CAMIONES CHICOS
@@ -18,17 +20,24 @@ class Simulacion:
             self.camiones_chicos.append(Camion_chico(cuadrante, calles_en_cuadrantes[cuadrante]))
         #SE CREA Y SE AÑADE EL CAMION GRANDE
         self.camion_grande = Camion_grande()
+        self.calles = self.grid.calles
     
     def termino_simulacion(self):
         pass
     
+    def limpia_express(self):
+        for calle in self.calles:
+            if calle.basura_actual >= 12:
+                self.basura_recogida_limpiaexpress += calle.basura_actual
+                calle.basura_actual = 0
+
     def dia_simulacion(self):
         tiempo_simulacion = 0
         self.grid.generar_basura()
         for camion in self.camiones_chicos:
             camion.inicio_dia()
             camion.tiempo_traslado_cuadrante(tiempo_simulacion)
-        while tiempo_simulacion < 100 * 3600:
+        while tiempo_simulacion < 11 * 3600:
             tiempo_minimo = infinito
             camion_actual = None
             for camion in self.camiones_chicos:
@@ -39,7 +48,9 @@ class Simulacion:
                 tiempo_minimo = self.camion_grande.tiempo_siguiente_evento
                 camion_actual = self.camion_grande
             tiempo_simulacion = tiempo_minimo
+            
             if isinstance(camion_actual, Camion_chico): #Si el camion que realiza el siguiente evento es chico:
+                print("EVENTO CAMIÓN CHICO ID {}: {} AT {}".format(camion_actual.id, camion_actual.status, tiempo_simulacion))
                 if camion_actual.status == "RECOLECTANDO":
                     camion_actual.tiempo_traslado_acopio(tiempo_simulacion)
                 elif camion_actual.status == "YENDO A CUADRANTE":
@@ -52,14 +63,22 @@ class Simulacion:
                         self.camion_grande.tiempo_siguiente_evento = tiempo_simulacion
                 elif camion_actual.status == "VACIANDO":
                     camion_actual.tiempo_traslado_cuadrante(tiempo_simulacion)
+
             else:  #Si el camion que realiza el siguiente evento es grande:
+                print("EVENTO CAMIÓN GRANDE: {} AT {}".format(camion_actual.status, tiempo_simulacion))
                 if camion_actual.status == "VACIADO":
                     camion_actual.status = "CENTRO DE ACOPIO"
                     if len(camion_actual.cola_vaciado) != 0:
                         self.tiempo_siguiente_evento = tiempo_simulacion
                 elif camion_actual.status == "CENTRO DE ACOPIO":
                     camion_actual.descarga_camion_chico(tiempo_simulacion)
-        self.grid.mapa()
+                    
+
+        
+        self.limpia_express()
+        #self.grid.mapa()
+
+
 
 
 
