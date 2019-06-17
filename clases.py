@@ -104,6 +104,7 @@ class Camion_chico:
         self.cuadrante = cuadrante
         self.capacidad_maxima = 180
         self.basura_actual = 0
+        self.basura_total_recogida = 0
         self.tiempo_recoleccion = 0
         self.tiempo_desplazamiento = 0
         self.tiempo_total = 0
@@ -151,6 +152,7 @@ class Camion_chico:
             tiempo += 100/self.velocidad_desplazamiento_recoleccion 
             if self.recoleccion():
                 self.tiempo_siguiente_evento = tiempo
+                self.basura_total_recogida += self.basura_actual
                 return self.tiempo_siguiente_evento
                 
 
