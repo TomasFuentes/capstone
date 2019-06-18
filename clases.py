@@ -144,7 +144,7 @@ class Camion_chico:
         elif aux2 != 0:
             #print("El camión chico {} recolectó {} kg de basura en la calle '{}'".format(self.id, aux2, calle.nombre)) 
             return False 
-
+    
     def tiempo_en_recolectar(self, tiempo_simulacion):
         self.status = "RECOLECTANDO"
         tiempo = tiempo_simulacion
@@ -266,6 +266,7 @@ class Camion_chico:
         x = coordenadas[1]
         y = coordenadas[0]
         return ((100 * x) + (100 * y))/self.velocidad_desplazamiento_sinrecolectar
+
 
 class Camion_grande:
 

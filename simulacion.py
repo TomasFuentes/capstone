@@ -35,6 +35,7 @@ class Simulacion:
         tiempo_simulacion = 0
         self.grid.generar_basura()
         print(self.grid)
+        self.grid.mapa()
         for camion in self.camiones_chicos:
             camion.inicio_dia()
             camion.tiempo_traslado_cuadrante(tiempo_simulacion)
@@ -95,7 +96,7 @@ class Simulacion:
         print("BASURA TOTAL CAMION GRANDE: {}".format(self.camion_grande.basura_total))
         print(self.grid)
         self.limpia_express()
-        #self.grid.mapa()
+        self.grid.mapa()
 
 
 
